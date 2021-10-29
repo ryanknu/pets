@@ -1,0 +1,24 @@
+[package]
+name = "pets"
+version = "0.1.0"
+authors = ["Ryan Knuesel <ryan.knuesel@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+[dependencies]
+fastrand = "1.5.0"
+juniper = "0.15.7"
+juniper_rocket = "0.8"
+rocket = { version = "0.5.0-rc.1", default-features = false}
+sled = "0.34.7"
+sled-extensions = { version = "0.2.0", features = ["bincode"]}
+serde = { version = "1.0.117", features = ["derive"] }
+serde_json = "1.0.59"
+
+[target.'cfg(all(target_env = "musl", target_pointer_width = "64"))'.dependencies.jemallocator]
+version = "0.3"
