@@ -21,6 +21,8 @@ WORKDIR /site
 
 COPY ./ .
 
+RUN mkdir sled_data
+
 RUN cargo build --target x86_64-unknown-linux-musl --release
 
 RUN strip -s /site/target/x86_64-unknown-linux-musl/release/pets
@@ -35,8 +37,15 @@ WORKDIR /pets
 
 # Copy our build
 COPY --from=builder /site/target/x86_64-unknown-linux-musl/release/pets ./pets
+COPY --from=builder --chown=http:http /site/sled_data ./sled_data
 
 # Use an unprivileged user.
 USER http:http
+
+# Configure rocket
+ENV ROCKET_IDENT="Pets Server"
+ENV ROCKET_ADDRESS="0.0.0.0"
+ENV ROCKET_PORT="8000"
+EXPOSE 8000
 
 CMD ["/pets/pets"]
