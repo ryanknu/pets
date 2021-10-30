@@ -10,14 +10,14 @@ It is designed to run in Docker (5.1MB image size). Use `docker run --rm -p 8000
 
 - `main` is the rust entrypoint.
 - `auth` is the code that handles http authentication.
-- `types` is where all types and BASE resolvers for those types are, ie `crate::types::Trainer::trainer()` simply proxies to another module, but _every_ GraphQL connection in this application can be found in this file.
+- `types` is where all types and _base_ resolvers for those types are, ie `crate::types::Trainer::trainer()` simply proxies to another module, but _every_ GraphQL connection in this application can be found in this file.
 - `query` or `mutation` - these are root-level GraphQL resolvers, and call other modules.
 - `$model` - this is the _actual_ resolver for a model exists e.g. `crate::trainer::trainer()` is what actually does database operations.
 - `$x_to_$y` - this is the resolver for a link, so `pet_to_trainer` is expected to follow the link in the Query `{ Pet { Trainer { name }}}`.
 
 ## Game Rules
 
-You create a trainer with `createTrainer`. You will be logged in. In case you are not logged in, you can call `authorizeTrainer` with your username and password. Your account will be created with 0 cash and no pets.
+You create a trainer with `createTrainer`. You will be logged in. In case you are not logged in, you can call `authorizeTrainer` with your username and password. Your account will be created with 100 cash and no pets.
 
 Upon logging in, you will receive `cash` based on your pets levels and how long you were gone.
 
