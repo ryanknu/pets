@@ -43,22 +43,22 @@ type Schema = RootNode<'static, Query, Mutation, EmptySubscription<Database>>;
 
 #[rocket::get("/api?<request>")]
 fn api_get(
-    context: &State<Database>,
+    database: &State<Database>,
     request: juniper_rocket::GraphQLRequest,
     schema: &State<Schema>,
     key: auth::ApiKey,
 ) -> juniper_rocket::GraphQLResponse {
-    request.execute_sync(&*schema, &*context)
+    request.execute_sync(&*schema, &*database)
 }
 
 #[rocket::post("/api", data = "<request>")]
 fn api_post(
-    context: &State<Database>,
+    database: &State<Database>,
     request: juniper_rocket::GraphQLRequest,
     schema: &State<Schema>,
     key: auth::ApiKey,
 ) -> juniper_rocket::GraphQLResponse {
-    request.execute_sync(&*schema, &*context)
+    request.execute_sync(&*schema, &*database)
 }
 
 #[rocket::main]

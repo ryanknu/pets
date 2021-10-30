@@ -14,8 +14,8 @@ impl Mutation {
         "1.0"
     }
 
-    fn adopt_pet(context: &Database, pet_id: String) -> FieldResult<Trainer> {
-        match crate::adopt_pet::adopt_pet(context, "ryan", &*pet_id) {
+    fn adopt_pet(context: &Database, pet_id: String, pet_name: String) -> FieldResult<Trainer> {
+        match crate::adopt_pet::adopt_pet(context, "ryan", &*pet_id, &*pet_name) {
             Err(str) => FieldResult::Err(FieldError::new(
                 str,
                 graphql_value!({ "internal_error": str }),
