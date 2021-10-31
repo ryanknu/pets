@@ -1,4 +1,4 @@
-use crate::{pet_to_trainer::pet_to_trainer, trainer_to_pets::trainer_to_pets, Database};
+use crate::{pet_to_trainer::pet_to_trainer, trainer_to_pets::trainer_to_pets, AuthedContext};
 use juniper::{GraphQLEnum, GraphQLObject};
 use serde::{Deserialize, Serialize};
 
@@ -9,7 +9,7 @@ pub struct Trainer {
 }
 
 #[juniper::graphql_object(
-    Context = Database,
+    Context = AuthedContext,
 )]
 impl Trainer {
     fn name(&self) -> &str {
@@ -20,9 +20,9 @@ impl Trainer {
         (&self).cash
     }
 
-    fn pets(&self, database: &Database) -> Vec<Pet> {
-        match database.trainers.get(&self.name) {
-            Ok(Some(trainer)) => trainer_to_pets(database, trainer.pet_ids),
+    fn pets(&self, context: &AuthedContext) -> Vec<Pet> {
+        match context.database.trainers.get(&self.name) {
+            Ok(Some(trainer)) => trainer_to_pets(&context.database, trainer.pet_ids),
             _ => vec![],
         }
     }
@@ -56,7 +56,7 @@ pub struct Pet {
 }
 
 #[juniper::graphql_object(
-    Context = Database,
+    Context = AuthedContext,
 )]
 impl Pet {
     fn id(&self) -> &str {
@@ -67,10 +67,10 @@ impl Pet {
         &self.name
     }
 
-    fn trainer(&self, database: &Database) -> Option<Trainer> {
-        match database.pets.get(&self.id) {
+    fn trainer(&self, context: &AuthedContext) -> Option<Trainer> {
+        match context.database.pets.get(&self.id) {
             Ok(Some(pet)) => match pet.trainer_name {
-                Some(trainer_name) => pet_to_trainer(database, trainer_name),
+                Some(trainer_name) => pet_to_trainer(&context.database, trainer_name),
                 None => None,
             },
             _ => None,

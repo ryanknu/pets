@@ -37,9 +37,25 @@ pub struct Database {
     trainers: Tree<TrainerInternal>,
 }
 
-impl juniper::Context for Database {}
+pub struct AuthedContext {
+    pub auth_key: String,
+    pub database: Database,
+}
 
-type Schema = RootNode<'static, Query, Mutation, EmptySubscription<Database>>;
+impl juniper::Context for AuthedContext {}
+
+type Schema = RootNode<'static, Query, Mutation, EmptySubscription<AuthedContext>>;
+
+fn make_context(database: &Database, auth_key: String) -> AuthedContext {
+    AuthedContext {
+        auth_key: auth_key,
+        database: Database {
+            adoptable_pets: database.adoptable_pets.clone(),
+            pets: database.pets.clone(),
+            trainers: database.trainers.clone(),
+        },
+    }
+}
 
 #[rocket::get("/api?<request>")]
 fn api_get(
@@ -48,7 +64,7 @@ fn api_get(
     schema: &State<Schema>,
     key: auth::ApiKey,
 ) -> juniper_rocket::GraphQLResponse {
-    request.execute_sync(&*schema, &*database)
+    request.execute_sync(&*schema, &make_context(database, key.0.to_string()))
 }
 
 #[rocket::post("/api", data = "<request>")]
@@ -58,7 +74,7 @@ fn api_post(
     schema: &State<Schema>,
     key: auth::ApiKey,
 ) -> juniper_rocket::GraphQLResponse {
-    request.execute_sync(&*schema, &*database)
+    request.execute_sync(&*schema, &make_context(database, key.0.to_string()))
 }
 
 #[rocket::main]
@@ -83,7 +99,7 @@ async fn main() {
         .manage(Schema::new(
             Query,
             Mutation,
-            EmptySubscription::<Database>::new(),
+            EmptySubscription::<AuthedContext>::new(),
         ))
         .mount("/", rocket::routes![api_get, api_post])
         .launch()

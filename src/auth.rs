@@ -1,6 +1,6 @@
 use rocket::request::{FromRequest, Outcome, Request};
 
-pub struct ApiKey<'r>(&'r str);
+pub struct ApiKey<'r>(pub &'r str);
 
 #[derive(Debug)]
 pub enum ApiKeyError {}
