@@ -53,7 +53,7 @@ impl Mutation {
             )),
             Ok(trainer) => FieldResult::Ok(AuthorizeResult {
                 success: true,
-                jwt: "".into(),
+                jwt: username,
             }),
         }
     }
