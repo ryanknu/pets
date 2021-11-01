@@ -1,5 +1,6 @@
 use crate::{
-    types::{AuthorizeResult, Trainer},
+    auth::time,
+    types::{AuthorizeResult, Trainer, UpdateResult},
     AuthedContext,
 };
 use juniper::{graphql_object, graphql_value, FieldError, FieldResult};
@@ -51,7 +52,7 @@ impl Mutation {
                 str,
                 graphql_value!({ "internal_error": str }),
             )),
-            Ok(trainer) => FieldResult::Ok(AuthorizeResult {
+            Ok(_) => FieldResult::Ok(AuthorizeResult {
                 success: true,
                 jwt: username,
             }),
@@ -65,6 +66,16 @@ impl Mutation {
                 graphql_value!({ "internal_error": str }),
             )),
             Ok(trainer) => FieldResult::Ok(trainer),
+        }
+    }
+
+    fn update(context: &AuthedContext) -> FieldResult<UpdateResult> {
+        match crate::update::update(&context, context.auth_key.to_string(), time()) {
+            Err(str) => FieldResult::Err(FieldError::new(
+                str,
+                graphql_value!({ "internal_error": str }),
+            )),
+            Ok(result) => FieldResult::Ok(result),
         }
     }
 }

@@ -33,7 +33,7 @@ fn random_pet(username: &str) -> PetInternal {
         trainer_name: Some(username.into()),
         name: "Unnamed Pet".into(),
         species: random_species(),
-        age: 0,
+        age: 1.0,
         last_fed: 0,
         art_seed: fastrand::i32(0..2000000000),
     }

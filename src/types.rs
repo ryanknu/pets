@@ -28,12 +28,13 @@ impl Trainer {
     }
 }
 
-#[derive(Clone, Deserialize, GraphQLObject, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct TrainerInternal {
     pub name: String,
     pub cash: i32,
     pub pet_ids: Vec<String>,
     pub password: String,
+    pub last_seen: u64,
 }
 
 impl Into<Trainer> for TrainerInternal {
@@ -94,15 +95,15 @@ impl Pet {
     }
 }
 
-#[derive(Clone, Deserialize, GraphQLObject, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct PetInternal {
     pub id: String,
     pub name: String,
     pub trainer_name: Option<String>,
     pub species: Species,
     pub art_seed: i32,
-    pub age: i32,
-    pub last_fed: i32,
+    pub age: f64,
+    pub last_fed: u64,
 }
 
 impl Into<Pet> for PetInternal {
@@ -111,8 +112,8 @@ impl Into<Pet> for PetInternal {
             id: self.id,
             name: self.name,
             species: self.species,
-            age: self.age,
-            last_fed: self.last_fed,
+            age: (self.age as i32),
+            last_fed: (self.last_fed as i32),
             art_seed: self.art_seed,
         }
     }
@@ -129,4 +130,18 @@ pub enum Species {
 pub struct AuthorizeResult {
     pub success: bool,
     pub jwt: String,
+}
+
+#[derive(GraphQLObject)]
+pub struct UpdateResult {
+    pub duration: i32,
+    pub pets: Vec<UpdatePet>,
+}
+
+#[derive(GraphQLObject)]
+pub struct UpdatePet {
+    pub pet_id: String,
+    pub from_age: f64,
+    pub to_age: f64,
+    pub cash_earned: i32,
 }

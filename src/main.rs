@@ -18,6 +18,7 @@ mod query;
 mod trainer;
 mod trainer_to_pets;
 mod types;
+mod update;
 
 // Use Jemalloc only for musl-64 bits platforms
 #[cfg(all(target_env = "musl", target_pointer_width = "64"))]

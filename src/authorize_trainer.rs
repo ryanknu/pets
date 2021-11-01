@@ -3,9 +3,6 @@ use crate::{types::AuthorizeResult, Database};
 ///
 pub fn authorize_trainer(sled: &Database, username: &str, password: &str) -> AuthorizeResult {
     // TODO: store password stronger with either bcrypt or argon.
-    // TODO: level up pets
-    // TODO: add PetDelta to AuthorizeResult, which has From : To
-
     let result = sled.trainers.get(username);
     if let Ok(Some(result)) = result {
         if result.password.eq(password) {

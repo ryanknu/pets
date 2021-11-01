@@ -1,6 +1,5 @@
+use crate::auth::time;
 use crate::{types::Trainer, Database};
-use std::convert::TryFrom;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn feed_pet<'a>(database: &Database, username: &str, pet_id: &str) -> Result<Trainer, &'a str> {
     let result = database.trainers.get(username);
@@ -9,14 +8,7 @@ pub fn feed_pet<'a>(database: &Database, username: &str, pet_id: &str) -> Result
             return Err("Not enough cash to feed pet :(");
         }
 
-        let new_fed_time = SystemTime::now();
-        let new_fed_time = new_fed_time.duration_since(UNIX_EPOCH);
-
-        if let Err(_) = new_fed_time {
-            return Err("An internal error occurred");
-        }
-
-        let new_fed_time = new_fed_time.unwrap();
+        let new_fed_time = time();
 
         let mut updated_trainer = trainer.clone();
         updated_trainer.cash -= 50;
@@ -29,10 +21,11 @@ pub fn feed_pet<'a>(database: &Database, username: &str, pet_id: &str) -> Result
         let pet = database.pets.get(pet_id);
         if let Ok(Some(pet)) = pet {
             let mut updated_pet = pet.clone();
-            // TODO: crashes when last_fed is > 2038. should change to use Chrono
-            updated_pet.last_fed = i32::try_from(new_fed_time.as_secs()).unwrap();
-            database.pets.insert(pet_id, updated_pet);
-            return Ok(updated_trainer.into());
+            updated_pet.last_fed = new_fed_time;
+            return match database.pets.insert(pet_id, updated_pet) {
+                Ok(Some(_)) => Ok(updated_trainer.into()),
+                _ => Err("Error saving pet"),
+            };
         }
     }
     Err("Trainer not found")

@@ -1,4 +1,5 @@
 use crate::{
+    auth::time,
     types::{Trainer, TrainerInternal},
     Database,
 };
@@ -19,6 +20,7 @@ pub fn create_trainer<'a>(
         password: password.into(),
         cash: 100,
         pet_ids: vec![],
+        last_seen: time(),
     };
 
     let result = sled.trainers.insert(username, new_trainer.clone());
