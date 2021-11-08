@@ -22,7 +22,7 @@ impl Trainer {
 
     fn pets(&self, context: &AuthedContext) -> Vec<Pet> {
         match context.database.trainers.get(&self.name) {
-            Ok(Some(trainer)) => trainer_to_pets(&context.database, trainer.pet_ids),
+            Ok(Some(trainer)) => trainer_to_pets(&context.database, &trainer),
             _ => vec![],
         }
     }
@@ -70,10 +70,7 @@ impl Pet {
 
     fn trainer(&self, context: &AuthedContext) -> Option<Trainer> {
         match context.database.pets.get(&self.id) {
-            Ok(Some(pet)) => match pet.trainer_name {
-                Some(trainer_name) => pet_to_trainer(&context.database, trainer_name),
-                None => None,
-            },
+            Ok(Some(pet)) => pet_to_trainer(&context.database, &pet),
             _ => None,
         }
     }

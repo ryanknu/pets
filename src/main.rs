@@ -5,6 +5,7 @@ use query::Query;
 use rocket::State;
 use sled_extensions::bincode::Tree;
 use sled_extensions::DbExt;
+use std::sync::Arc;
 
 mod adopt_pet;
 mod adoptable_pets;
@@ -33,9 +34,9 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 /// and vend a connection from that pool to each Request using a FromRequest
 /// deserializer.
 pub struct Database {
-    adoptable_pets: Tree<Vec<PetInternal>>,
-    pets: Tree<PetInternal>,
-    trainers: Tree<TrainerInternal>,
+    adoptable_pets: Arc<Tree<Vec<PetInternal>>>,
+    pets: Arc<Tree<PetInternal>>,
+    trainers: Arc<Tree<TrainerInternal>>,
 }
 
 pub struct AuthedContext {
@@ -87,15 +88,18 @@ async fn main() {
 
     rocket::build()
         .manage(Database {
-            adoptable_pets: db
-                .open_bincode_tree("adoptable_pets")
-                .expect("failed to open adoptable_pets tree"),
-            pets: db
-                .open_bincode_tree("pets")
-                .expect("failed to open adoptable_pets tree"),
-            trainers: db
-                .open_bincode_tree("trainers")
-                .expect("failed to open trainers tree"),
+            adoptable_pets: Arc::new(
+                db.open_bincode_tree("adoptable_pets")
+                    .expect("failed to open adoptable_pets tree"),
+            ),
+            pets: Arc::new(
+                db.open_bincode_tree("pets")
+                    .expect("failed to open adoptable_pets tree"),
+            ),
+            trainers: Arc::new(
+                db.open_bincode_tree("trainers")
+                    .expect("failed to open trainers tree"),
+            ),
         })
         .manage(Schema::new(
             Query,
