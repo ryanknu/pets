@@ -12,7 +12,7 @@ use crate::{
 /// that call this method.
 pub fn adoptable_pets(sled: &Database, username: &str) -> Vec<Pet> {
     match sled.adoptable_pets.get(username) {
-        Ok(Some(adoptable_pets)) => adoptable_pets.iter().map(|p| p.clone().into()).collect(),
+        Ok(Some(adoptable_pets)) => adoptable_pets.iter().map(|p| p.into()).collect(),
         _ => create_pets(sled, username),
     }
 }
@@ -20,7 +20,7 @@ pub fn adoptable_pets(sled: &Database, username: &str) -> Vec<Pet> {
 fn create_pets(sled: &Database, username: &str) -> Vec<Pet> {
     let random_pets = three_random_pets(username);
     let result = sled.adoptable_pets.insert(username, random_pets.clone());
-    let random_pets = random_pets.iter().map(|p| p.clone().into()).collect();
+    let random_pets = random_pets.iter().map(|p| p.into()).collect();
     if let Err(_) = result {
         return random_pets;
     }

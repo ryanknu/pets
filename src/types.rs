@@ -116,6 +116,19 @@ impl Into<Pet> for PetInternal {
     }
 }
 
+impl From<&PetInternal> for Pet {
+    fn from(pet: &PetInternal) -> Pet {
+        Pet {
+            id: pet.id.clone(),
+            name: pet.name.clone(),
+            species: pet.species.clone(),
+            age: (pet.age as i32),
+            last_fed: (pet.last_fed as i32),
+            art_seed: pet.art_seed,
+        }
+    }
+}
+
 #[derive(Clone, Deserialize, GraphQLEnum, Serialize)]
 pub enum Species {
     Flarf,
