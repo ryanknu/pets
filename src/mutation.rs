@@ -20,12 +20,8 @@ impl Mutation {
         pet_id: String,
         pet_name: String,
     ) -> FieldResult<Trainer> {
-        match crate::adopt_pet::adopt_pet(
-            &context.database,
-            &*context.auth_key,
-            &*pet_id,
-            &*pet_name,
-        ) {
+        match crate::adopt_pet::adopt_pet(&context.database, &context.auth_key, &pet_id, &pet_name)
+        {
             Err(str) => FieldResult::Err(FieldError::new(
                 str,
                 graphql_value!({ "internal_error": str }),

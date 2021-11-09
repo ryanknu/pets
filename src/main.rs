@@ -12,6 +12,7 @@ mod adoptable_pets;
 mod auth;
 mod authorize_trainer;
 mod create_trainer;
+mod error;
 mod feed_pet;
 mod mutation;
 mod pet_to_trainer;
