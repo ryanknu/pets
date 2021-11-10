@@ -13,7 +13,7 @@ pub fn adopt_pet<'a>(
 }
 
 fn adopt_pet_inner<'a>(
-    database: &Database, // TODO: rename this
+    database: &Database,
     username: &String,
     pet_id: &String,
     pet_name: &String,
