@@ -1,4 +1,7 @@
-use crate::{pet_to_trainer::pet_to_trainer, trainer_to_pets::trainer_to_pets, AuthedContext};
+use crate::{
+    error::PetsError, pet_to_trainer::pet_to_trainer, trainer_to_pets::trainer_to_pets,
+    AuthedContext, Database,
+};
 use juniper::{GraphQLEnum, GraphQLObject};
 use serde::{Deserialize, Serialize};
 
@@ -43,6 +46,20 @@ impl Into<Trainer> for TrainerInternal {
             name: self.name,
             cash: self.cash,
         }
+    }
+}
+
+impl TrainerInternal {
+    pub fn pay(&mut self, database: &Database, amount: i32) -> Result<(), PetsError> {
+        if amount > self.cash {
+            return Err(PetsError);
+        }
+
+        self.cash -= amount;
+
+        database.trainers.insert(&*self.name, self.clone())?;
+
+        Ok(())
     }
 }
 

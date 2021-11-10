@@ -1,32 +1,34 @@
 use crate::auth::time;
+use crate::error::PetsError;
 use crate::{types::Trainer, Database};
 
-pub fn feed_pet<'a>(database: &Database, username: &str, pet_id: &str) -> Result<Trainer, &'a str> {
-    let result = database.trainers.get(username);
-    if let Ok(Some(trainer)) = result {
-        if trainer.cash < 50 {
-            return Err("Not enough cash to feed pet :(");
-        }
-
-        let new_fed_time = time();
-
-        let mut updated_trainer = trainer.clone();
-        updated_trainer.cash -= 50;
-        let result = database.trainers.insert(username, updated_trainer.clone());
-        if let Err(_) = result {
-            return Err("An internal error occurred");
-        }
-
-        // TODO: oh man this lets you pay for pets that you don't own :) or non-existent pets
-        let pet = database.pets.get(pet_id);
-        if let Ok(Some(pet)) = pet {
-            let mut updated_pet = pet.clone();
-            updated_pet.last_fed = new_fed_time;
-            return match database.pets.insert(pet_id, updated_pet) {
-                Ok(Some(_)) => Ok(updated_trainer.into()),
-                _ => Err("Error saving pet"),
-            };
-        }
+pub fn feed_pet<'a>(
+    database: &Database,
+    username: &String,
+    pet_id: &String,
+) -> Result<Trainer, &'a str> {
+    match feed_pet_internal(database, username, pet_id) {
+        Ok(trainer) => Ok(trainer),
+        _ => Err("Error feeding pet"),
     }
-    Err("Trainer not found")
+}
+
+fn feed_pet_internal(
+    database: &Database,
+    username: &String,
+    pet_id: &String,
+) -> Result<Trainer, PetsError> {
+    let mut trainer = database.trainers.get(username)?.ok_or(PetsError)?;
+    trainer.pay(database, 50)?;
+
+    if !trainer.pet_ids.iter().any(|id| pet_id == id) {
+        return Err(PetsError);
+    }
+
+    let mut pet = database.pets.get(pet_id)?.ok_or(PetsError)?;
+
+    pet.last_fed = time();
+    database.pets.insert(&pet_id[..], pet)?;
+
+    Ok(trainer.into())
 }

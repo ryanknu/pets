@@ -12,39 +12,42 @@ pub fn adopt_pet<'a>(
     }
 }
 
-// TODO: Make it cost money. Perhaps add an impl to TrainerInternal that is trainer.pay(&database, cost: i32) -> bool?
-// TODO: Method needs a clean up. new_pets should be a filter call, etc.
-// TODO: Send back actual error messages
 fn adopt_pet_inner<'a>(
-    sled: &Database,
+    database: &Database, // TODO: rename this
     username: &String,
     pet_id: &String,
     pet_name: &String,
 ) -> Result<Trainer, PetsError> {
-    let trainer = sled.trainers.get(username)?.ok_or(PetsError)?;
-    let pets = sled.adoptable_pets.get(&trainer.name)?.ok_or(PetsError)?;
+    let mut trainer = database.trainers.get(username)?.ok_or(PetsError)?;
+    let pets = database
+        .adoptable_pets
+        .get(&trainer.name)?
+        .ok_or(PetsError)?;
 
-    let mut found = false;
-    let mut new_pets = Vec::new();
-    for pet in pets {
-        if pet.id.eq(pet_id) {
-            let mut adopted_pet = pet.clone();
-            adopted_pet.name = pet_name.into();
-            sled.pets.insert(&*pet.id, adopted_pet)?;
-            found = true;
+    let cost = match trainer.pet_ids.len() {
+        0 => 0,
+        1 => 1_000,
+        _ => 10_000,
+    };
 
-            let mut new_trainer = trainer.clone();
-            new_trainer
-                .pet_ids
-                .insert(new_trainer.pet_ids.len(), pet.id.into());
-            sled.trainers.insert(&*trainer.name, new_trainer)?;
-        } else {
-            new_pets.insert(new_pets.len(), pet.clone());
-        }
-    }
-    if found {
-        sled.adoptable_pets.insert(&*trainer.name, new_pets)?;
-    }
+    let mut adopted_pet = pets
+        .iter()
+        .find(|pet| pet.id.eq(pet_id))
+        .ok_or(PetsError)?
+        .clone();
+    adopted_pet.name = pet_name.into();
+
+    let mut pets = pets.clone(); // I am unsure if this clone is necessary
+    pets.retain(|pet| !pet.id.eq(&adopted_pet.id));
+
+    trainer.pet_ids.insert(trainer.pet_ids.len(), pet_id.into());
+
+    trainer.pay(database, cost)?;
+    database
+        .pets
+        .insert(&*adopted_pet.id, adopted_pet.clone())?;
+    database.trainers.insert(&*trainer.name, trainer.clone())?;
+    database.adoptable_pets.insert(&*trainer.name, pets)?;
 
     Ok(Trainer {
         name: trainer.name,

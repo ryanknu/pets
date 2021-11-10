@@ -43,7 +43,7 @@ impl Mutation {
         username: String,
         password: String,
     ) -> FieldResult<AuthorizeResult> {
-        match crate::create_trainer::create_trainer(&context.database, &*username, &*password) {
+        match crate::create_trainer::create_trainer(&context.database, &username, &password) {
             Err(str) => FieldResult::Err(FieldError::new(
                 str,
                 graphql_value!({ "internal_error": str }),
@@ -56,7 +56,7 @@ impl Mutation {
     }
 
     fn feed_pet(context: &AuthedContext, pet_id: String) -> FieldResult<Trainer> {
-        match crate::feed_pet::feed_pet(&context.database, &*context.auth_key, &*pet_id) {
+        match crate::feed_pet::feed_pet(&context.database, &context.auth_key, &pet_id) {
             Err(str) => FieldResult::Err(FieldError::new(
                 str,
                 graphql_value!({ "internal_error": str }),
